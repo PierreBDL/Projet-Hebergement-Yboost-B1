@@ -1,0 +1,19 @@
+<IfModule mod_dir.c>
+    DirectoryIndex index.php index.html index.cgi index.pl index.xhtml index.shtml
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    
+    # Si c'est un fichier physique, on le sert directement
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+    
+    # Si c'est un répertoire physique, on le sert directement
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    
+    # Sinon, on redirige tout vers index.php
+    RewriteRule ^(.*)$ [L]
+</IfModule>

@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: messagerie-app
+    env: docker
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: DB_HOST
+        value: <replace_with_your_db_render_url>
+      - key: DB_NAME
+        value: bdd_messagerie
+      - key: DB_USER
+        value: <your_db_user>
+      - key: DB_PASS
+        fromDatabase:
+          name: messagerie-db
+          property: password
+      - key: DB_PORT
+        value: 3306
+
+  - type: pserv
+    name: messagerie-db
+    dbName: bdd_messagerie
+    user: messagerie_user
+    plan: free
+    ipAllowList: []
+    region: frankfurt

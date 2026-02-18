@@ -1,0 +1,28 @@
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Dossier de clone temporaire
+Projet-Hebergement-Yboost-B1/
+
+# Uploads (optionnel - peut être généré automatiquement)
+# uploads/
+
+# Node modules (si vous utilisez npm)
+node_modules/
+npm-debug.log

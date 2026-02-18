@@ -1,0 +1,31 @@
+services:
+  web:
+    build: .
+    ports:
+      - "80:80"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=bdd_messagerie
+      - DB_USER=messagerie_user
+      - DB_PASS=secure_password
+      - DB_PORT=3306
+    depends_on:
+      - db
+    volumes:
+      - ./uploads:/var/www/html/uploads
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: bdd_messagerie
+      MYSQL_USER: messagerie_user
+      MYSQL_PASSWORD: secure_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./bdd/bdd.sql:/docker-entrypoint-initdb.d/init.sql
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
