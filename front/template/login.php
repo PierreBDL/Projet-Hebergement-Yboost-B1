@@ -1,46 +1,114 @@
 <?php
-    ob_start();
-    session_start();
+session_start();
 
-    include_once('../../bdd/fonctionConnexionBdd.inc.php');
-    $connexion = connectionPDO('../../bdd/configBdd');
+include_once('../../bdd/fonctionConnexionBdd.inc.php');
+$connexion = connectionPDO('../../bdd/configBdd');
 
-    if ($connexion === false) {
-        die("Erreur : Impossible de se connecter à la base de données. Vérifiez votre configuration.");
+$message = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $identifiant = trim($_POST['identifiant']);
+    $motdepasse = $_POST['password'];
+
+    if ($identifiant && $motdepasse) {
+
+        // Génération AES
+        $key = random_bytes(32);
+        $iv = random_bytes(16);
+
+        $encrypted = openssl_encrypt($motdepasse, "AES-256-CBC", $key, 0, $iv);
+
+        $stmt = $connexion->prepare("
+            INSERT INTO compte (identifiant, motdepasse, iv, cle)
+            VALUES (:i, :m, :iv, :k)
+        ");
+
+        $stmt->bindValue(':i', $identifiant);
+        $stmt->bindValue(':m', $encrypted, PDO::PARAM_LOB);
+        $stmt->bindValue(':iv', $iv, PDO::PARAM_LOB);
+        $stmt->bindValue(':k', $key, PDO::PARAM_LOB);
+
+        $stmt->execute();
+
+        $message = "Compte créé";
     }
+}
+?>
 
-    $message = '';
+<form method="post">
+    <input name="identifiant" placeholder="Identifiant">
+    <input name="password" type="password">
+    <button>S'inscrire</button>
+</form>
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['valider'])) {
-        $identifiant = trim($_POST['identifiant']);
-        $motdepasse = $_POST['password'];
-        if (!empty($identifiant) && !empty($motdepasse)) {
-            $stmt = $connexion->prepare("SELECT idcompte, identifiant, motdepasse, iv, cle FROM compte WHERE identifiant = :identifiant");
-            $stmt->bindValue(':identifiant', $identifiant);
-            $stmt->execute();
-            $utilisateur = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($utilisateur){
-                $key = $utilisateur['cle'];
-                $encryptedmdp = $utilisateur['motdepasse'];
-                $iv = $utilisateur['iv'];
-                //Décrypter le mdp
-                $decrytedmdp = openssl_decrypt($encryptedmdp, "AES-256-CBC", $key, 0, $iv);
-                if ($decrytedmdp == $motdepasse) {
-                    $_SESSION['access'] = 'pass';
-                    $_SESSION['id'] = $utilisateur['idcompte'];
-                    $_SESSION['identifiant'] = $utilisateur['identifiant'];
-                    header('Location: ./dashboard.php');
-                    exit();
-                } else {
-                    $message = "Identifiant ou mot de passe incorrect.";
-                }
+<?= $message ?>
+✅ 5. login.php (corrigé PostgreSQL BYTEA)
+<?php
+session_start();
+
+include_once('../../bdd/fonctionConnexionBdd.inc.php');
+$connexion = connectionPDO('../../bdd/configBdd');
+
+$message = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $identifiant = trim($_POST['identifiant']);
+    $motdepasse = $_POST['password'];
+
+    if ($identifiant && $motdepasse) {
+
+        $stmt = $connexion->prepare("
+            SELECT idcompte, identifiant, motdepasse, iv, cle
+            FROM compte
+            WHERE identifiant = :i
+        ");
+
+        $stmt->bindValue(':i', $identifiant);
+        $stmt->execute();
+
+        $user = $stmt->fetch();
+
+        if ($user) {
+
+            // Conversion BYTEA PostgreSQL
+            $encrypted = $user['motdepasse'];
+            $iv = $user['iv'];
+            $key = $user['cle'];
+
+            if (is_resource($encrypted)) {
+                $encrypted = stream_get_contents($encrypted);
             }
-        } else {
-            $message = "Veuillez remplir tous les champs.";
-        }
-    }
+            if (is_resource($iv)) {
+                $iv = stream_get_contents($iv);
+            }
+            if (is_resource($key)) {
+                $key = stream_get_contents($key);
+            }
 
-    ob_end_flush();
+            $decrypted = openssl_decrypt(
+                $encrypted,
+                "AES-256-CBC",
+                $key,
+                0,
+                $iv
+            );
+
+            if ($decrypted === $motdepasse) {
+
+                $_SESSION['access'] = 'pass';
+                $_SESSION['id'] = $user['idcompte'];
+                $_SESSION['identifiant'] = $user['identifiant'];
+
+                header("Location: dashboard.php");
+                exit;
+            }
+        }
+
+        $message = "Identifiants incorrects";
+    }
+}
 ?>
 
 <!DOCTYPE html>
