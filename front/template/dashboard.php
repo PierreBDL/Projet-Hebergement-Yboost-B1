@@ -24,6 +24,10 @@
     include_once('../../bdd/fonctionConnexionBdd.inc.php');
     $connexion = connectionPDO('../../bdd/configBdd');
 
+    if ($connexion === false) {
+        die("Erreur : Impossible de se connecter à la base de données. Vérifiez votre configuration.");
+    }
+
     // Gérer l'acceptation/refus d'invitations
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_invitation'])) {
         $idInvitant = (int)$_POST['id_invitant'];

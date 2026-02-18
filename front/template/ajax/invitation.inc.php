@@ -19,6 +19,11 @@ if ($pseudo === '') {
 include_once('../../../bdd/fonctionConnexionBdd.inc.php');
 $connexion = connectionPDO('../../../bdd/configBdd');
 
+if ($connexion === false) {
+    echo json_encode(['success' => false, 'error' => 'Erreur connexion BD']);
+    exit;
+}
+
 // Chercher le destinataire
 $stmt = $connexion->prepare("SELECT idcompte FROM compte WHERE identifiant = :identifiant");
 $stmt->bindValue(':identifiant', $pseudo);

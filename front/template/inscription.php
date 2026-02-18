@@ -4,6 +4,10 @@
     include_once('../../bdd/fonctionConnexionBdd.inc.php');
     $connexion = connectionPDO('../../bdd/configBdd');
 
+    if ($connexion === false) {
+        die("Erreur : Impossible de se connecter à la base de données. Vérifiez votre configuration.");
+    }
+
     $message = '';
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['valider'])) {
