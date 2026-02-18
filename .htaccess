@@ -15,5 +15,5 @@
     RewriteRule ^ - [L]
     
     # Sinon, on redirige tout vers index.php
-    RewriteRule ^(.*)$ [L]
+    RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>
