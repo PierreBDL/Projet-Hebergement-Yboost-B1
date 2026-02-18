@@ -1,16 +1,23 @@
 <?php
 
-// Vérifier si on est en environnement Docker/Render
-$host = getenv('DB_HOST') ?: 'localhost';
-$name = getenv('DB_NAME') ?: 'bdd_messagerie';
-$user = getenv('DB_USER') ?: 'root';
-$pass = getenv('DB_PASS') ?: '';
-$port = getenv('DB_PORT') ?: '3306';
+// Charger les variables d'environnement depuis .env.local ou .env.example
+include_once(__DIR__ . '/loadEnv.inc.php');
 
-define ('HOST', $host);
-define('NAME', $name);
-define ('USER', $user);
-define ('PASS', $pass);
-define ('PORT', $port);
+// Vérifier si DATABASE_URL est défini (Supabase/Render)
+$databaseUrl = getenv('DATABASE_URL');
+
+if ($databaseUrl) {
+    // PostgreSQL via URI
+    define ('DB_TYPE', 'pgsql');
+    define ('DATABASE_URL', $databaseUrl);
+} else {
+    // MySQL (local/dev)
+    define ('DB_TYPE', 'mysql');
+    define ('HOST', getenv('DB_HOST') ?: 'localhost');
+    define ('NAME', getenv('DB_NAME') ?: 'bdd_messagerie');
+    define ('USER', getenv('DB_USER') ?: 'root');
+    define ('PASS', getenv('DB_PASS') ?: '');
+    define ('PORT', getenv('DB_PORT') ?: '3306');
+}
 
 ?>

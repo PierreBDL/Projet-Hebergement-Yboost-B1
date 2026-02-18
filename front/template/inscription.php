@@ -25,9 +25,9 @@
                 try {
                     $stmt = $connexion->prepare("INSERT INTO compte (identifiant, motdepasse, iv, cle) VALUES (:identifiant, :motdepasse, :iv, :cle)");
                     $stmt->bindValue(':identifiant', $identifiant);
-                    $stmt->bindValue(':motdepasse', $hashedPassword);
-                    $stmt->bindValue(':iv', $iv);
-                    $stmt->bindValue(':cle', $key);
+                    $stmt->bindValue(':motdepasse', $hashedPassword, PDO::PARAM_LOB);
+                    $stmt->bindValue(':iv', $iv, PDO::PARAM_LOB);
+                    $stmt->bindValue(':cle', $key, PDO::PARAM_LOB);
                     $stmt->execute();
                     header("Location: ./login.php");
                     exit();

@@ -10,7 +10,7 @@
         $identifiant = trim($_POST['identifiant']);
         $motdepasse = $_POST['password'];
         if (!empty($identifiant) && !empty($motdepasse)) {
-            $stmt = $connexion->prepare("SELECT idCompte, identifiant, motdepasse, iv, cle FROM compte WHERE identifiant = :identifiant");
+            $stmt = $connexion->prepare("SELECT idcompte, identifiant, motdepasse, iv, cle FROM compte WHERE identifiant = :identifiant");
             $stmt->bindValue(':identifiant', $identifiant);
             $stmt->execute();
             $utilisateur = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -22,7 +22,7 @@
                 $decrytedmdp = openssl_decrypt($encryptedmdp, "AES-256-CBC", $key, 0, $iv);
                 if ($decrytedmdp == $motdepasse) {
                     $_SESSION['access'] = 'pass';
-                    $_SESSION['id'] = $utilisateur['idCompte'];
+                    $_SESSION['id'] = $utilisateur['idcompte'];
                     $_SESSION['identifiant'] = $utilisateur['identifiant'];
                     header('Location: ./dashboard.php');
                     exit();

@@ -20,7 +20,7 @@ include_once('../../../bdd/fonctionConnexionBdd.inc.php');
 $connexion = connectionPDO('../../../bdd/configBdd');
 
 // Chercher le destinataire
-$stmt = $connexion->prepare("SELECT idCompte FROM compte WHERE identifiant = :identifiant");
+$stmt = $connexion->prepare("SELECT idcompte FROM compte WHERE identifiant = :identifiant");
 $stmt->bindValue(':identifiant', $pseudo);
 $stmt->execute();
 $dest = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -32,13 +32,13 @@ if (!$dest) {
 
 // Insertion invitation
 $stmt = $connexion->prepare("
-    INSERT INTO contact (idPossesseur, idDestinataire, statut)
+    INSERT INTO contact (idpossesseur, iddestinataire, statut)
     VALUES (:me, :dest, 'en_attente')
 ");
 
 $response['success'] = $stmt->execute([
     ':me'   => $_SESSION['id'],
-    ':dest' => $dest['idCompte']
+    ':dest' => $dest['idcompte']
 ]);
 
 $response['message'] = "Invitation envoyée à $pseudo";

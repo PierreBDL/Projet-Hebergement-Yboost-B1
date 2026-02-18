@@ -34,7 +34,7 @@
             $stmt = $connexion->prepare("
                 UPDATE contact 
                 SET statut = 'accepte' 
-                WHERE idPossesseur = :invitant AND idDestinataire = :user
+                WHERE idpossesseur = :invitant AND iddestinataire = :user
             ");
             $stmt->bindValue(':invitant', $idInvitant, PDO::PARAM_INT);
             $stmt->bindValue(':user', $_SESSION['id'], PDO::PARAM_INT);
@@ -44,7 +44,7 @@
             $stmt = $connexion->prepare("
                 SELECT COUNT(*) as existe 
                 FROM contact 
-                WHERE idPossesseur = :user AND idDestinataire = :invitant
+                WHERE idpossesseur = :user AND iddestinataire = :invitant
             ");
             $stmt->bindValue(':user', $_SESSION['id'], PDO::PARAM_INT);
             $stmt->bindValue(':invitant', $idInvitant, PDO::PARAM_INT);
@@ -53,7 +53,7 @@
 
             if ($result['existe'] == 0) {
                 $stmt = $connexion->prepare("
-                    INSERT INTO contact (idPossesseur, idDestinataire, statut)
+                    INSERT INTO contact (idpossesseur, iddestinataire, statut)
                     VALUES (:user, :invitant, 'accepte')
                 ");
                 $stmt->bindValue(':user', $_SESSION['id'], PDO::PARAM_INT);
@@ -63,7 +63,7 @@
         } elseif ($action === 'refuser') {
             $stmt = $connexion->prepare("
                 DELETE FROM contact 
-                WHERE idPossesseur = :invitant AND idDestinataire = :user
+                WHERE idpossesseur = :invitant AND iddestinataire = :user
             ");
             $stmt->bindValue(':invitant', $idInvitant, PDO::PARAM_INT);
             $stmt->bindValue(':user', $_SESSION['id'], PDO::PARAM_INT);
@@ -76,10 +76,10 @@
 
     // Récupérer les invitations en attente
     $stmt = $connexion->prepare("
-        SELECT c.idContact, c.idPossesseur, cp.identifiant
+        SELECT c.idcontact, c.idpossesseur, cp.identifiant
         FROM contact c
-        JOIN compte cp ON cp.idCompte = c.idPossesseur
-        WHERE c.idDestinataire = :user
+        JOIN compte cp ON cp.idcompte = c.idpossesseur
+        WHERE c.iddestinataire = :user
         AND c.statut = 'en_attente'
         ORDER BY c.date_creation DESC
     ");
@@ -89,10 +89,10 @@
 
     // Récupérer les contacts et les afficher
     $stmt = $connexion->prepare("
-        SELECT c.idCompte, c.identifiant
+        SELECT c.idcompte, c.identifiant
         FROM contact ct
-        JOIN compte c ON c.idCompte = ct.idDestinataire
-        WHERE ct.idPossesseur = :identifiant
+        JOIN compte c ON c.idcompte = ct.iddestinataire
+        WHERE ct.idpossesseur = :identifiant
         AND ct.statut = 'accepte'");
     $stmt->bindValue(':identifiant', $_SESSION["id"]);
     $stmt->execute();
@@ -105,10 +105,10 @@
     $stmt = $connexion->prepare("
         SELECT m.*, c.identifiant AS pseudo_emetteur
         FROM messages m
-        JOIN compte c ON c.idCompte = m.idEmetteur
+        JOIN compte c ON c.idcompte = m.idemetteur
         WHERE
-            (m.idEmetteur = :user AND m.idReceveur = :contact)
-            OR (m.idEmetteur = :contact AND m.idReceveur = :user)
+            (m.idemetteur = :user AND m.idreceveur = :contact)
+            OR (m.idemetteur = :contact AND m.idreceveur = :user)
         ORDER BY m.date_creation ASC
     ");
 
@@ -153,7 +153,7 @@
             }
 
             $stmt = $connexion->prepare("
-                INSERT INTO messages (idEmetteur, idReceveur, contenu, chemin) 
+                INSERT INTO messages (idemetteur, idreceveur, contenu, chemin) 
                 VALUES (:idEmetteur, :idReceveur, :contenu, :chemin)
             ");
 
@@ -223,11 +223,11 @@
                                 </div>
                                 <div class="invitation-actions">
                                     <form method="POST" style="display: inline;">
-                                        <input type="hidden" name="id_invitant" value="<?= $invitation['idPossesseur'] ?>">
+                                        <input type="hidden" name="id_invitant" value="<?= $invitation['idpossesseur'] ?>">
                                         <button type="submit" name="action_invitation" value="accepter" class="btn-accepter">✓ Accepter</button>
                                     </form>
                                     <form method="POST" style="display: inline;">
-                                        <input type="hidden" name="id_invitant" value="<?= $invitation['idPossesseur'] ?>">
+                                        <input type="hidden" name="id_invitant" value="<?= $invitation['idpossesseur'] ?>">
                                         <button type="submit" name="action_invitation" value="refuser" class="btn-refuser">✕ Refuser</button>
                                     </form>
                                 </div>
@@ -243,7 +243,7 @@
                     <p class="contactVide">Aucun contact pour le moment !</p>
                 <?php else : ?>
                     <?php foreach ($contacts as $contact) : ?>
-                        <a href="?contact=<?= (int)$contact['idCompte'] ?>" class="contactItem <?= ($idContact ?? null) == $contact['idCompte'] ? 'active' : '' ?>">
+                        <a href="?contact=<?= (int)$contact['idcompte'] ?>" class="contactItem <?= ($idContact ?? null) == $contact['idcompte'] ? 'active' : '' ?>">
                             <img src="../assets/images/avatar.jpg" alt="avatar">
                             <span><?= htmlspecialchars($contact['identifiant']) ?></span>
                         </a>
@@ -279,7 +279,7 @@
                     <?php else : ?>
                         <h2>Discussion</h2>
                         <?php foreach ($msgs as $msg) : ?>
-                            <div class="message <?= $msg['idEmetteur'] == $_SESSION['id'] ? 'emetteur' : 'recepteur' ?>">
+                            <div class="message <?= $msg['idemetteur'] == $_SESSION['id'] ? 'emetteur' : 'recepteur' ?>">
                                 <div class="message-content">
                                     <?php if (!empty($msg['chemin'])) :
                                         $file = $msg['chemin'];
