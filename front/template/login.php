@@ -1,4 +1,5 @@
 <?php
+    ob_start();
     session_start();
 
     include_once('../../bdd/fonctionConnexionBdd.inc.php');
@@ -38,6 +39,8 @@
             $message = "Veuillez remplir tous les champs.";
         }
     }
+
+    ob_end_flush();
 ?>
 
 <!DOCTYPE html>
