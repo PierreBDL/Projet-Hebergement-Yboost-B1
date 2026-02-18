@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 
@@ -13,25 +14,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($identifiant && $motdepasse) {
 
-        // Génération AES
-        $key = random_bytes(32);
-        $iv = random_bytes(16);
-
-        $encrypted = openssl_encrypt($motdepasse, "AES-256-CBC", $key, 0, $iv);
-
         $stmt = $connexion->prepare("
-            INSERT INTO compte (identifiant, motdepasse, iv, cle)
-            VALUES (:i, :m, :iv, :k)
+            SELECT idcompte, identifiant, motdepasse, iv, cle
+            FROM compte
+            WHERE identifiant = :i
         ");
 
         $stmt->bindValue(':i', $identifiant);
-        $stmt->bindValue(':m', $encrypted, PDO::PARAM_LOB);
-        $stmt->bindValue(':iv', $iv, PDO::PARAM_LOB);
-        $stmt->bindValue(':k', $key, PDO::PARAM_LOB);
-
         $stmt->execute();
 
-        $message = "Compte créé";
+        $user = $stmt->fetch();
+
+        if ($user) {
+
+            // Conversion BYTEA PostgreSQL
+            $encrypted = $user['motdepasse'];
+            $iv = $user['iv'];
+            $key = $user['cle'];
+
+            if (is_resource($encrypted)) {
+                $encrypted = stream_get_contents($encrypted);
+            }
+            if (is_resource($iv)) {
+                $iv = stream_get_contents($iv);
+            }
+            if (is_resource($key)) {
+                $key = stream_get_contents($key);
+            }
+
+            $decrypted = openssl_decrypt(
+                $encrypted,
+                "AES-256-CBC",
+                $key,
+                0,
+                $iv
+            );
+
+            if ($decrypted === $motdepasse) {
+
+                $_SESSION['access'] = 'pass';
+                $_SESSION['id'] = $user['idcompte'];
+                $_SESSION['identifiant'] = $user['identifiant'];
+
+                header("Location: dashboard.php");
+                exit;
+            }
+        }
+
+        $message = "Identifiants incorrects";
     }
 }
 ?>
